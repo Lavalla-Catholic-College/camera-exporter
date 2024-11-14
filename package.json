@@ -6,7 +6,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "deploy": "rmdir /s /q dist & npm run build & cd dist & git init & git add . & git commit -m \"Deploy via script\" & git remote add origin https://github.com/graydav1/camera-exporter.git & git push --force origin master:gh-pages"
+    "deploy": "rmdir /s /q dist & npm run build & cd dist & git init & git add . & git commit -m \"Deploy via script\" & git remote add origin https://github.com/Lavalla-Catholic-College/camera-exporter.git & git push --force origin master:gh-pages"
   },
   "dependencies": {
     "core-js": "^3.8.3",
