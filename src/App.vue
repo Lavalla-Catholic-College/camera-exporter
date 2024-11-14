@@ -71,11 +71,14 @@
 
 <script>
 
-dayjs.extend(window.dayjs_plugin_objectSupport)
+
 
 
 export default {
   name: 'App',
+  beforeMount() {
+    dayjs.extend(window.dayjs_plugin_objectSupport)
+  },
   data() {
     return {
       nvr: '10.12.10.100:7001', // The URL of the NVR. 
