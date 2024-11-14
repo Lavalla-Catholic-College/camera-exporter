@@ -77,7 +77,7 @@
 export default {
   name: 'App',
   beforeMount() {
-    dayjs.extend(window.dayjs_plugin_objectSupport)
+    window.dayjs.extend(window.dayjs_plugin_objectSupport)
   },
   data() {
     return {
@@ -90,7 +90,7 @@ export default {
       thumbnail: '', // The thumbnail from the selected camera
       loggedIn: false, // If we're logged in or not. Assume not by default
       duration: 60, // How many minutes of footage to get
-      footageDateObject: new dayjs().subtract(1, 'hour'), // Used for dates and times. Default to one hour ago.
+      footageDateObject: new window.dayjs().subtract(1, 'hour'), // Used for dates and times. Default to one hour ago.
       dateShortcuts: { // Shortcut buttons to adjust times and such
         'Before School': {
           'time': { hour: 8, minute: 0 },
@@ -149,7 +149,7 @@ export default {
     modifyDate(dateShortcut) {
       const ds = this.dateShortcuts[dateShortcut]
       this.duration = ds['duration']
-      this.footageDateObject = new dayjs(ds['time'])
+      this.footageDateObject = new window.dayjs(ds['time'])
     },
 
     async login() {
