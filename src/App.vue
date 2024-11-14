@@ -41,7 +41,8 @@
         <div class="col-6">
           <div class="form-group">
             <label for="footageDate" class="form-label">Date</label>
-            <input class="form-control" type="datetime-local" v-model="footageDate">
+            <input class="form-control" type="datetime-local" v-model="footageDate" :max="footageDateMaxTime">
+            <small>Date is {{ footageDateAsHumanReadable }}</small>
           </div>
           <div class="form-group mt-4">
             <label for="duration" class="form-label">Duration (in minutes)</label>
@@ -58,26 +59,22 @@
           </div>
         </div>
       </div>
-      <div class="row">
+      <div class="row mt-4">
         <div class="col">
-          <button class="btn btn-primary" v-on:click="download">Download Footage</button>
+          <a class="btn btn-primary" :href="downloadURL" :download="`${selectedCamera.name}.mkv`" target="_blank">Download Footage</a>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<style></style>
-
 <script>
-
-
-
 
 export default {
   name: 'App',
   beforeMount() {
     window.dayjs.extend(window.dayjs_plugin_objectSupport)
+    window.dayjs.extend(window.dayjs_plugin_relativeTime)
   },
   data() {
     return {
@@ -90,7 +87,7 @@ export default {
       thumbnail: '', // The thumbnail from the selected camera
       loggedIn: false, // If we're logged in or not. Assume not by default
       duration: 60, // How many minutes of footage to get
-      footageDateObject: new window.dayjs().subtract(1, 'hour'), // Used for dates and times. Default to one hour ago.
+      footageDate: new window.dayjs().subtract(1, 'hour').format('YYYY-MM-DDTHH:mm:ss.000'),
       dateShortcuts: { // Shortcut buttons to adjust times and such
         'Before School': {
           'time': { hour: 8, minute: 0 },
@@ -139,8 +136,17 @@ export default {
     cameraThumbnail() {
       return 'https://' + this.nvr + '/rest/v2/devices/' + this.selectedCamera?.id + '/image?size=320x240'
     },
-    footageDate() {
-      return this.footageDateObject.format('YYYY-MM-DDTHH:mm:ss')
+    footageDateFinal() {
+      return this.footageDate
+    },
+    downloadURL() {
+      return `https://${this.nvr}/hls/${this.selectedCamera.id}.mkv?pos=${this.footageDate}&duration=${this.duration * 60}`
+    },
+    footageDateAsHumanReadable() {
+      return new window.dayjs(this.footageDate).fromNow()
+    },
+    footageDateMaxTime() { // Sets the latest time you can pick in the datetime picker. This prevents people from picking a date in the future
+      return new window.dayjs().format('YYYY-MM-DDTHH:mm:ss.000')
     }
   },
   methods: {
@@ -149,7 +155,7 @@ export default {
     modifyDate(dateShortcut) {
       const ds = this.dateShortcuts[dateShortcut]
       this.duration = ds['duration']
-      this.footageDateObject = new window.dayjs(ds['time'])
+      this.footageDate = new window.dayjs(ds['time']).format('YYYY-MM-DDTHH:mm:ss.000')
     },
 
     async login() {
@@ -208,31 +214,6 @@ export default {
         console.error(ex)
       }
 
-
-    },
-
-    // Downloads footage from a camera
-    async download() {
-      if (!this.selectedCamera) {
-        alert('You must select a camera!')
-        return false
-      }
-
-      const response = await fetch(`https://${this.nvr}/hls/${this.selectedCamera.id}.mkv?pos=${this.footageDate}&duration=${this.duration}`, {
-        mode: 'no-cors',
-        credentials: 'include',
-        headers: {
-          'Content-Disposition': `attachment; filename="${this.selectedCamera.name}"`,
-          'Access-Control-Allow-Origin': true
-        }
-      })
-      const blob = await response.blob();
-      const objectUrl = URL.createObjectURL(blob);
-
-      const link = document.createElement('a');
-      link.href = objectUrl;
-      link.download = this.selectedCamera.name; // the default filename when the user saves the file
-      link.click();
 
     }
 
